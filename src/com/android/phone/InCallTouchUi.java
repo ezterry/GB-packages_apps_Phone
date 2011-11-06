@@ -38,6 +38,8 @@ import com.android.internal.telephony.Phone;
 import com.android.internal.widget.SlidingTab;
 import com.android.internal.telephony.CallManager;
 
+import android.provider.Settings;
+import android.provider.Settings.SettingNotFoundException;
 
 /**
  * In-call onscreen touch UI elements, used on some platforms.
@@ -248,7 +250,12 @@ public class InCallTouchUi extends FrameLayout
         if ((ringingCall.getState() != Call.State.IDLE)
                 && !cm.getActiveFgCallState().isDialing()) {
             // A phone call is ringing *or* call waiting.
-            if (mAllowIncomingCallTouchUi) {
+            boolean incomingOveride=false;
+            incomingOveride = Settings.System.getInt(
+                                  getContext().getContentResolver(),
+                                  Settings.System.PHONE_FORCE_INCOMING_CALL_UI,
+                                  0) == 1;
+            if (mAllowIncomingCallTouchUi || incomingOveride) {
                 // Watch out: even if the phone state is RINGING, it's
                 // possible for the ringing call to be in the DISCONNECTING
                 // state.  (This typically happens immediately after the user
@@ -523,7 +530,12 @@ public class InCallTouchUi extends FrameLayout
      * the "incoming call" state on the current device.
      */
     /* package */ boolean isIncomingCallTouchUiEnabled() {
-        return mAllowIncomingCallTouchUi;
+        boolean incomingOveride=false;
+        incomingOveride = Settings.System.getInt(
+                              getContext().getContentResolver(),
+                              Settings.System.PHONE_FORCE_INCOMING_CALL_UI,
+                              0) == 1;
+        return (mAllowIncomingCallTouchUi || incomingOveride);
     }
 
     //
